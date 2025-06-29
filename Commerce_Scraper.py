@@ -15,7 +15,7 @@ class CommerceScraper:
 
     @staticmethod
     def price_rating(price):
-        #Return the rating category for price
+        #Return the rating category for price, create a range of rating by price
         try:
             value = float(price)
         except (TypeError, ValueError):
