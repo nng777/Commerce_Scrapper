@@ -1,39 +1,49 @@
-import requests
-import pandas as pd
+from __future__ import annotations
+
 import numpy as np
+import pandas as pd
+import requests
 
-# Step 1: Call the Platzi Fake Store API
-url = "https://publicapi.dev/platzi-fake-store-api/products"
+from typing import Any, List, Dict
 
-response = requests.get(url)
-response.raise_for_status()  # Raise error if failed
-data = response.json()
+API_URL = "https://api.escuelajs.co/api/v1/products"
 
-# Step 2: Extract product info
-products = []
 
-for item in data:
-    name = item.get("title", "N/A")
-    price = item.get("price", 0)
+def extract_rating(product: Dict[str, Any]) -> float:
+    """Return the numeric rating for ``product`` if present."""
+    rating = product.get("rating")
+    if isinstance(rating, dict):
+        rating = rating.get("rate")
+    try:
+        return float(rating)
+    except (TypeError, ValueError):
+        return np.nan
 
-    # Some products have ratings nested
-    rating_data = item.get("rating", {})
-    rating = rating_data.get("rate", 0.0)
 
-    products.append({
-        "Name": name,
-        "Price": price,
-        "Rating": rating
-    })
+def fetch_all_products(url: str = API_URL) -> pd.DataFrame:
+    """Fetch all products from ``url`` and return them as a DataFrame."""
+    response = requests.get(url, timeout=15)
+    response.raise_for_status()
+    data = response.json()
 
-# Step 3: Create DataFrame
-df = pd.DataFrame(products)
+    items: List[Dict[str, Any]] = []
+    for prod in data:
+        name = prod.get("title", "")
+        price = prod.get("price")
+        items.append({"Name": name, "Price": price})
 
-# Step 4: Calculate averages
-average_price = np.mean(df["Price"])
-average_rating = np.mean(df["Rating"])
+    return pd.DataFrame(items)
 
-# Step 5: Show output
-print(df.head())
-print("\n📊 Average Price: ${:,.2f}".format(average_price))
-print("⭐ Average Rating: {:.2f}".format(average_rating))
+
+def main() -> None:
+    """Download product data and print average price."""
+    df = fetch_all_products()
+    print(df)
+
+    avg_price = np.nanmean(df["Price"])
+
+    print(f"Average Price: {avg_price}")
+
+
+if __name__ == "__main__":
+    main()
