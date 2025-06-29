@@ -56,6 +56,49 @@ class CommerceScraper:
 
         return pd.DataFrame(items)
 
+    def generate_html_report(self, output_file: str = "products.html"):
+        """Generate an HTML page containing the product comparison table."""
+        df = self.fetch_all_products()
+
+        avg_price = np.nanmean(df["Price"])
+        avg_price_rating = np.nanmean(df["Price Rating"])
+
+        table_html = df.to_html(index=False, classes="product-table", border=0)
+
+        html = f"""<!DOCTYPE html>
+    <html lang='en'>
+    <head>
+        <meta charset='UTF-8'>
+        <title>Product Comparison</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            .product-table {{
+                border-collapse: collapse;
+                width: 100%;
+            }}
+            .product-table th, .product-table td {{
+                border: 1px solid #ddd;
+                padding: 8px;
+            }}
+            .product-table th {{
+                background-color: #f2f2f2;
+                text-align: left;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>Product Comparison</h1>
+        {table_html}
+        <p><strong>Average Price:</strong> {avg_price:.2f}</p>
+        <p><strong>Average Price Rating:</strong> {avg_price_rating:.2f}</p>
+    </body>
+    </html>"""
+
+        with open(output_file, "w", encoding="utf-8") as fh:
+            fh.write(html)
+
+        print(f"HTML report saved to {output_file}")
+
     def report(self):
         #Fetch product data and print average statistics.
         df = self.fetch_all_products()
@@ -70,7 +113,9 @@ class CommerceScraper:
 
 def main():
 
-    CommerceScraper().report()
+    scraper = CommerceScraper()
+    scraper.report()
+    scraper.generate_html_report()
 
 
 if __name__ == "__main__":
