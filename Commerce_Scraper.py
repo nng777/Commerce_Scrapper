@@ -1,3 +1,6 @@
+'''Scrape product details (name, price, rating) from a single category of an e-commerce website.
+Use Pandas to store the data and NumPy to find the average price and rating.'''
+
 import numpy as np
 import pandas as pd
 import requests
@@ -7,13 +10,12 @@ API_URL = "https://api.escuelajs.co/api/v1/products"
 
 
 class CommerceScraper:
-    """Utility class for downloading and processing product data."""
 
     api_url: str = API_URL
 
     @staticmethod
     def price_rating(price):
-        """Return the rating category for ``price``."""
+        #Return the rating category for price
         try:
             value = float(price)
         except (TypeError, ValueError):
@@ -27,7 +29,7 @@ class CommerceScraper:
 
     @staticmethod
     def extract_rating(product):
-        """Return the numeric rating for ``product`` if present."""
+        #Return the numeric rating for product
         rating = product.get("rating")
         if isinstance(rating, dict):
             rating = rating.get("rate")
@@ -37,7 +39,7 @@ class CommerceScraper:
             return np.nan
 
     def fetch_all_products(self):
-        """Fetch all products from the API and return them as a DataFrame."""
+        #Fetch all products from the API and return them as a DataFrame
         response = requests.get(self.api_url, timeout=15)
         response.raise_for_status()
         data = response.json()
@@ -55,7 +57,7 @@ class CommerceScraper:
         return pd.DataFrame(items)
 
     def report(self):
-        """Download product data and print average statistics."""
+        #Fetch product data and print average statistics.
         df = self.fetch_all_products()
         print(df)
 
@@ -67,7 +69,7 @@ class CommerceScraper:
 
 
 def main():
-    """Run the command line interface."""
+
     CommerceScraper().report()
 
 
